@@ -50,6 +50,32 @@ def load_worldport_data():
 load_worldport_data()
 
 
+# Question 1: Nearest Ports to Singapore's JURONG ISLAND port
+def nearest_singapore_port(csv_path='raw/worldport.csv'):
+    wpi_data = pd.read_csv(csv_path)
+    singapore_jurong_data = wpi_data[
+        (wpi_data['wpi_country_code'] == 'SG') & 
+        (wpi_data['main_port_name'] == 'JURONG ISLAND')
+    ]
+    # Extracting coordinates of JURONG ISLAND
+    jurong_coords = (
+        singapore_jurong_data['latitude_degrees'].iloc[0] + singapore_jurong_data['latitude_minutes'].iloc[0] / 60,
+        singapore_jurong_data['longitude_degrees'].iloc[0] + singapore_jurong_data['longitude_minutes'].iloc[0] / 60
+    )
+    # Calculating distances to all ports
+    wpi_data['distance_in_meters'] = wpi_data.apply(
+        lambda row: geopy.distance.distance(jurong_coords, (row['latitude_degrees'] + row['latitude_minutes'] / 60, row['longitude_degrees'] + row['longitude_minutes'] / 60)).meters,
+        axis=1
+    )
+    #The 5 nearest ports
+    nearest_ports = wpi_data.sort_values('distance_in_meters').head(5)[['main_port_name', 'distance_in_meters']]
+    return nearest_ports
+result = nearest_singapore_port()
+conn = get_database_conn()
+result.to_sql(name='nearest_port_to_singapore', con=conn, if_exists='replace', index=False)
+print('Five nearest ports to Singapore have been written to PostgreSQL successfully.')
+
+
 
 
 
