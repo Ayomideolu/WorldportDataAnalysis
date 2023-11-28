@@ -42,6 +42,13 @@ wpi_data.to_csv('raw/worldport.csv', index=False)
 print('worldport data written successfully to csv file')
 
 
+def load_worldport_data():
+    wpi_data = pd.read_csv('raw/worldport.csv')
+    wpi_data.to_sql('wpi_data', con =get_database_conn(), if_exists = 'replace', index = False)
+    print('Data loaded successfully to postgres')
+
+load_worldport_data()
+
 
 
 
