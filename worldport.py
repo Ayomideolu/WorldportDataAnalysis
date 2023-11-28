@@ -76,6 +76,27 @@ result.to_sql(name='nearest_port_to_singapore', con=conn, if_exists='replace', i
 print('Five nearest ports to Singapore have been written to PostgreSQL successfully.')
 
 
+# Question2:Which country has the largest number of ports with a cargo_wharf? Your answer should
+# include the columns country and port_count only.
+
+
+def largest_no_cargowharf_port():
+    wpi_data = pd.read_csv('raw/worldport.csv') 
+    cargo_wharf_ports = wpi_data[wpi_data['load_offload_wharves'] == 'Y']
+    if cargo_wharf_ports.empty:
+        print("No ports with a cargo_wharf found.")
+        return pd.DataFrame(columns=['wpi_country_code', 'port_count'])
+    # Group by country and count the number of ports with a cargo_wharf for each country
+    country_port_counts = cargo_wharf_ports.groupby('wpi_country_code').size().reset_index(name='port_count')
+    # Find the country with the maximum number of ports with a cargo_wharf
+    max_ports_country = country_port_counts.loc[country_port_counts['port_count'].idxmax()].copy()
+    max_ports_country['wpi_country_code'] = str(max_ports_country['wpi_country_code'])
+    max_ports_country['port_count'] = int(max_ports_country['port_count'])
+    return max_ports_country[['wpi_country_code', 'port_count']]
+result = largest_no_cargowharf_port()
+conn = get_database_conn()
+result.to_sql(name='largest_no_of_cargowharf_port', con=conn, if_exists='replace', index=True)
+print('Country with the largest number of cargowharf has been written to PostgreSQL successfully.')
 
 
 
